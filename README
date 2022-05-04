@@ -1,0 +1,77 @@
+Name: Baiatu Bianca-Daniela, Class: 323CA
+
+Communication Protocols Course
+Homework - Router application
+
+April 2022
+
+IMPLEMENTATIONS: FORWARDING PROCESS:
+
+    -> Using the structure given in the solutions of the 4th lab I 
+        implemented the actions of the forwarding process
+    -> I first allocate and parse the routing table and the 
+        arp table which is to be completed afterwards dynamically.
+        I also create the queue where the awaiting packets are stored.
+    -> I get a packet and then extract the ethernet header.
+    -> The router then inspects the ethertype field. In this implementation
+        there are two posibilities: IPv4 and ARP. Any other posibilities 
+        are excluded and the packets are thrown away.
+    -> FIRST CASE: ethertype field is 0x0800, which means IPv4
+        -> The router extracts the ip header from the packet and the 
+            destination address.
+        -> The router checks if it is the destination of the packet, 
+            in which case it responds only if the message respect the 
+            ICMP protocol.
+        -> If the router is not the destination, it verifies the ip
+            checksum and time to leave fields.
+        -> The router searches for the destiantion ip address and interface
+            in the routing table. If an error is occured, and ICMP error 
+            message is sent.
+        -> The checksum and time to leave fields are updated acordin to 
+            the RFC 1624 protocol.
+        -> The router searches for the next hop address using int the arp 
+            table. If the next hop is not found in the table, the packet 
+            is put in a waiting queue until the next hop address is found.
+            The queue stores the packet and also the best route from the 
+            routing table. The router then sends an ARP request for the 
+            net hop address.
+    -> SECOND CASE: ethertype field is 0x0806, which means ARP
+        -> The router extracts the arp header from the packet.
+        -> In the case of receiving an ARP request, the router changes the 
+            arp header to form an ARP reply and switching the ip and mac 
+            addresses of the source with the destination.
+        -> In the case of receiving an ARP reply, the router creates a new 
+            entry in the arp table.
+        -> All the packets stored in the waiting queue are removed and the 
+            ones with a know next hop address are being sent. The rest are 
+            being stored once again in the queue until a reply with their 
+            next hop address is received.
+
+    The subpoints I implemented are:
+
+        -> ARP protocol
+        -> forwarding process
+        -> Longest Prefix Match efficiently
+        -> ICMP protocol
+        -> BONUS: incremental checksum
+
+    -> To implement the Longest Prefix Match efficiently I created the:
+        get_best_route_binary_search function. The routing table is at first 
+        sorted before dealing with any of the packets using the qsort function 
+        from algorithm.h library and the compare function. The 
+        get_best_route_binary_search function finds the last occurence when 
+        (dest_ip & rtable[i].mask) == rtable[i].prefix happens.
+
+    -> To send ICMP messages I used the send_icmp and send_icmp_error 
+        functions, which I got from the first archive that was published. 
+        I changed the parameters as I did not make use of them in my 
+        implementation.
+
+    -> To update the checksum incrementaly I created the incremental_checksum 
+        function. The formula of the checksum was calculated according to 
+        RFC 1624 protocol, found on this website:
+        https://datatracker.ietf.org/doc/html/rfc1624
+
+
+
+
